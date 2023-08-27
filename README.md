@@ -33,7 +33,7 @@ While the Cowchain Farm web app will cover the following:
 ## Get Started
 
 This article is specifically about the Soroban smart contract for Cowchain Farm. Discussion of the Cowchain Farm web app
-is in a separate repository.
+is in the [Cowchain Farm App repository](https://github.com/hasToDev/cowchain-farm-app).
 
 The Cowchain Farm smart contract in this repository was developed using `Rust version 1.73.0-nightly`
 and `Soroban CLI 0.9.1`
