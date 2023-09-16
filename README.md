@@ -36,7 +36,7 @@ This article is specifically about the Soroban smart contract for Cowchain Farm.
 is in the [Cowchain Farm App repository](https://github.com/hasToDev/cowchain-farm-app).
 
 The Cowchain Farm smart contract in this repository was developed using `Rust version 1.73.0-nightly`
-and `Soroban CLI 0.9.1`
+and `Soroban CLI 20.0.0-rc1`
 
 ## Install Rust and Soroban CLI
 
@@ -49,7 +49,7 @@ The first step you have to do is install Rust. You can follow the steps to insta
 Next we install Soroban CLI:
 
 ```shell
-cargo install --locked --version 0.9.4 soroban-cli
+cargo install --locked --version 20.0.0-rc1 soroban-cli
 ```
 
 Confirm that both Rust and Soroban CLI are installed by running `rustc --version` and `soroban --version`.
@@ -59,11 +59,11 @@ You should receive a result that is more or less similar to:
 ```text
 rustc 1.73.0-nightly (32303b219 2023-07-29)
 
-soroban 0.9.1 (b5e8586344ab52c0a1b8988b44b0c4e516a473ce)     
-soroban-env 0.0.17 (400d806387140553e4e685d232deb3a807ec0e36)
-soroban-env interface version 85899345971                    
-stellar-xdr 0.0.17 (0f16673441898162c9996da6117be2280ef8fd84)
-xdr next (e372df9f677961aac04c5a4cc80a3667f310b29f)
+soroban 20.0.0-rc1 (7d3b4175b1970f76455b4789797c2edc5f79e432)    
+soroban-env 20.0.0-rc1 (f19ef13363a1e0cbff7b100c0599a1d63dea88a6)
+soroban-env interface version 85899345977                        
+stellar-xdr 20.0.0-rc1 (d5ce0c9e7aa83461773a6e81662067f35d39e4c1)
+xdr curr (9ac02641139e6717924fdad716f6e958d0168491)
 ```
 
 ## Clone, Build, and Deploy
