@@ -1,6 +1,6 @@
 [package]
 name = "cowchain_farm"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["Hasto <hastodevgo@gmail.com>"]
 
@@ -18,7 +18,7 @@ codegen-units = 1
 lto = true
 
 [dependencies]
-soroban-sdk = "0.9.2"
+soroban-sdk = "20.0.0-rc1"
 
 [dev_dependencies]
-soroban-sdk = { version = "0.9.2", features = ["testutils"] }
+soroban-sdk = { version = "20.0.0-rc1", features = ["testutils"] }

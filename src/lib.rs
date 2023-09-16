@@ -19,10 +19,10 @@ pub struct CowContract;
 impl CowContractTrait for CowContract {
     fn init(env: Env, admin: Address, native_token: Address, message: String) -> Status {
         // check for initialization password.
-        // you must set your own unique password other than "5p2VQ6ru7wp54X8Cek5rC42X7".
+        // you must set your own unique password other than "9p2Vx4Dr8wp365n7C5rB42xN9".
         // you can use the Deployer contract instead for this check.
         // the main purpose is to prevent other people from initializing your contract.
-        let internal_password = String::from_slice(&env, "5p2VQ6ru7wp54X8Cek5rC42X7");
+        let internal_password = String::from_slice(&env, "9p2Vx4Dr8wp365n7C5rB42xN9");
         if message.ne(&internal_password) {
             return Status::TryAgain;
         }
@@ -42,8 +42,10 @@ impl CowContractTrait for CowContract {
         env.storage()
             .instance()
             .set(&DataKey::InitializedLedger, &env.ledger().sequence());
-        // bump storage instance lifetime to 50 weeks
-        env.storage().instance().bump(LEDGER_AMOUNT_IN_50_WEEKS);
+        // bump storage instance lifetime to 1 month
+        env.storage()
+            .instance()
+            .bump(LEDGER_AMOUNT_IN_1_MONTH, LEDGER_AMOUNT_IN_1_MONTH);
         Status::Ok
     }
 
@@ -77,7 +79,7 @@ impl CowContractTrait for CowContract {
         admin.require_auth();
 
         // bump instance storage
-        env.storage().instance().bump(ledger_amount);
+        env.storage().instance().bump(ledger_amount, ledger_amount);
         Status::Bumped
     }
 
@@ -159,13 +161,15 @@ impl CowContractTrait for CowContract {
         env.storage().persistent().set(&user, &cow_ownership_list);
         env.storage()
             .persistent()
-            .bump(&user, LEDGER_AMOUNT_IN_1_WEEK);
+            .bump(&user, LEDGER_AMOUNT_IN_1_WEEK, LEDGER_AMOUNT_IN_1_WEEK);
 
         // save cow data & bump lifetime to 24 hours.
         env.storage().temporary().set(&cow_id, &new_cow_data);
-        env.storage()
-            .temporary()
-            .bump(&cow_id, LEDGER_AMOUNT_IN_24_HOURS);
+        env.storage().temporary().bump(
+            &cow_id,
+            LEDGER_AMOUNT_IN_24_HOURS,
+            LEDGER_AMOUNT_IN_24_HOURS,
+        );
 
         BuyCowResult {
             status: Status::Ok,
@@ -234,7 +238,7 @@ impl CowContractTrait for CowContract {
         env.storage().persistent().set(&user, &cow_ownership_list);
         env.storage()
             .persistent()
-            .bump(&user, LEDGER_AMOUNT_IN_1_WEEK);
+            .bump(&user, LEDGER_AMOUNT_IN_1_WEEK, LEDGER_AMOUNT_IN_1_WEEK);
 
         // remove cow data from storage.
         env.storage().temporary().remove(&cow_id);
@@ -329,14 +333,16 @@ impl CowContractTrait for CowContract {
 
         // save updated cow data & bump lifetime to 24 hours.
         env.storage().temporary().set(&cow_id, &cow_data);
-        env.storage()
-            .temporary()
-            .bump(&cow_id, LEDGER_AMOUNT_IN_24_HOURS);
+        env.storage().temporary().bump(
+            &cow_id,
+            LEDGER_AMOUNT_IN_24_HOURS,
+            LEDGER_AMOUNT_IN_24_HOURS,
+        );
 
         // bump user lifetime to 1 week.
         env.storage()
             .persistent()
-            .bump(&user, LEDGER_AMOUNT_IN_1_WEEK);
+            .bump(&user, LEDGER_AMOUNT_IN_1_WEEK, LEDGER_AMOUNT_IN_1_WEEK);
 
         CowStatus {
             status: Status::Ok,

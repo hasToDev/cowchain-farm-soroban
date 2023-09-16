@@ -4,7 +4,7 @@
 pub const LEDGER_AMOUNT_IN_24_HOURS: u32 = 17280;
 pub const LEDGER_AMOUNT_IN_3_DAYS: u32 = 51840;
 pub const LEDGER_AMOUNT_IN_1_WEEK: u32 = 120960;
-pub const LEDGER_AMOUNT_IN_50_WEEKS: u32 = 6048000;
+pub const LEDGER_AMOUNT_IN_1_MONTH: u32 = 483840;
 
 // Cow price based on breed (in XLM unit).
 //
