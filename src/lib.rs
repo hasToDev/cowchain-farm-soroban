@@ -90,6 +90,33 @@ impl CowContractTrait for CowContract {
         }
     }
 
+    fn open_donation(env: Env, from: Address, amount: i128) -> Status {
+        // check Admin key in storage.
+        // if Admin key not exist, contract has not been initialized.
+        let is_admin_exist = env.storage().instance().has(&DataKey::Admin);
+        if !is_admin_exist {
+            return Status::Fail;
+        }
+
+        // if Native Token key not exist, contract has not been initialized.
+        let is_native_token_exist = env.storage().instance().has(&DataKey::NativeToken);
+        if !is_native_token_exist {
+            return Status::Fail;
+        }
+
+        from.require_auth();
+
+        // initiate native token client.
+        let native_token: Address = env.storage().instance().get(&DataKey::NativeToken).unwrap();
+        let native_token_client = token::Client::new(&env, &native_token);
+
+        // transfer native token from user to contract.
+        let donation_amount = amount * 10_000_000;
+        native_token_client.transfer(&from, &env.current_contract_address(), &donation_amount);
+
+        Status::Ok
+    }
+
     fn buy_cow(
         env: Env,
         user: Address,

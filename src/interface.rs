@@ -20,6 +20,10 @@ pub trait CowContractTrait {
     /// Health check for Cowchain Farm contract
     fn health_check(env: Env) -> CowStatus;
 
+    /// [CowContract::open_donation]
+    /// Donate to contract
+    fn open_donation(env: Env, from: Address, amount: i128) -> Status;
+
     /// [CowContract::buy_cow]
     /// Buy Cow from supplier
     fn buy_cow(
