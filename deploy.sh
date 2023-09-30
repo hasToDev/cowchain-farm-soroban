@@ -24,8 +24,8 @@ echo ""
 echo "soroban contract deploy"
 soroban contract deploy \
 --wasm target/wasm32-unknown-unknown/release/cowchain_farm.wasm \
---rpc-url https://rpc-futurenet.stellar.org:443 \
---network-passphrase 'Test SDF Future Network ; October 2022'
+--rpc-url https://soroban-testnet.stellar.org:443 \
+--network-passphrase 'Test SDF Network ; September 2015'
 if [ $? -ne 0 ]; then
     echo "soroban contract deploy failed. Exiting..."
     exit 1
