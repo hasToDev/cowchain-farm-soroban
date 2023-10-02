@@ -466,6 +466,13 @@ impl CowContractTrait for CowContract {
         auction_id: String,
         price: u32,
     ) -> Status {
+        // check Admin key in storage.
+        // if Admin key not exist, contract has not been initialized.
+        let is_admin_exist = env.storage().instance().has(&DataKey::Admin);
+        if !is_admin_exist {
+            return Status::NotInitialized;
+        }
+
         // ensures that user has authorized invocation of this contract.
         user.require_auth();
 
