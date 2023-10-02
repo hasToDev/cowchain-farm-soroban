@@ -53,4 +53,14 @@ pub trait CowContractTrait {
     // ! TESTNET DEVELOPMENT
     // ! ----------------------------------------------------------------------------
     fn pub_auction(env: Env, user: Address) -> u32;
+
+    /// [CowContract::register_auction]
+    /// Registering cow for auction
+    fn register_auction(
+        env: Env,
+        user: Address,
+        cow_id: String,
+        auction_id: String,
+        price: u32,
+    ) -> Status;
 }

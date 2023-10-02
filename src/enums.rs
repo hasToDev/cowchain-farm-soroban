@@ -6,6 +6,7 @@ pub enum DataKey {
     Admin,
     InitializedLedger,
     NativeToken,
+    AuctionList,
 }
 
 #[contracttype]
@@ -26,6 +27,7 @@ pub enum Status {
     Underage,
     MissingOwnership,
     FullStomach,
+    OnAuction,
 }
 
 #[contracttype]

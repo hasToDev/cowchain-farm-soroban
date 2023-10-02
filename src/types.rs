@@ -83,6 +83,7 @@ pub struct CowData {
     pub born_ledger: u32,
     pub last_fed_ledger: u32,
     pub feeding_stats: CowFeedingStats,
+    pub auction_id: String,
 }
 
 impl CowData {
@@ -94,6 +95,7 @@ impl CowData {
             born_ledger: 0,
             last_fed_ledger: 0,
             feeding_stats: CowFeedingStats::default(),
+            auction_id: String::from_slice(&env, "-"),
         }
     }
 }
@@ -123,4 +125,26 @@ pub struct CowEventDetails {
     pub name: Symbol,
     pub owner: Address,
     pub last_fed_ledger: u32,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
+pub struct AuctionData {
+    pub auction_id: String,
+    pub cow_id: String,
+    pub cow_name: Symbol,
+    pub cow_breed: CowBreed,
+    pub cow_born_ledger: u32,
+    pub owner: Address,
+    pub start_price: i128,
+    pub highest_bidder: Bidder,
+    pub bid_history: Vec<Bidder>,
+    pub auction_limit_ledger: u32,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
+pub struct Bidder {
+    pub user: Address,
+    pub price: i128,
 }

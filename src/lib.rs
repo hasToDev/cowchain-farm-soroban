@@ -174,6 +174,7 @@ impl CowContractTrait for CowContract {
             born_ledger: env.ledger().sequence(),
             last_fed_ledger: env.ledger().sequence(),
             feeding_stats: CowFeedingStats::default(),
+            auction_id: String::from_slice(&env, "-"),
         };
         let mut cow_ownership_list: Vec<String> = Vec::new(&env);
 
@@ -456,6 +457,81 @@ impl CowContractTrait for CowContract {
             .publish((symbol_short!("auction"),), new_cow_event);
         // give success result
         env.ledger().sequence()
+    }
+
+    fn register_auction(
+        env: Env,
+        user: Address,
+        cow_id: String,
+        auction_id: String,
+        price: u32,
+    ) -> Status {
+        // ensures that user has authorized invocation of this contract.
+        user.require_auth();
+
+        // check if cow still alive.
+        let is_cow_alive = env.storage().temporary().has(&cow_id);
+        if !is_cow_alive {
+            return Status::NotFound;
+        }
+
+        // Set CowData's auction ID to indicate that this cow is being auctioned.
+        let mut cow_data: CowData = env.storage().temporary().get(&cow_id).unwrap();
+        cow_data.auction_id = auction_id.clone();
+
+        let new_auction_data = AuctionData {
+            auction_id,
+            cow_id,
+            cow_name: cow_data.name.clone(),
+            cow_breed: cow_data.breed.clone(),
+            cow_born_ledger: cow_data.born_ledger.clone(),
+            owner: user.clone(),
+            start_price: price as i128,
+            highest_bidder: Bidder {
+                user: user.clone(),
+                price: price as i128,
+            },
+            bid_history: Vec::new(&env),
+            auction_limit_ledger: LEDGER_AMOUNT_IN_24_HOURS,
+        };
+
+        // Create and/or append auction list
+        let mut auction_list: Vec<AuctionData> = Vec::new(&env);
+        // if auction data exist, append the data to auction list.
+        let is_list_exist = env.storage().persistent().has(&DataKey::AuctionList);
+        if is_list_exist {
+            // get current ownership data.
+            let stored_auction_list: Vec<AuctionData> = env
+                .storage()
+                .persistent()
+                .get(&DataKey::AuctionList)
+                .unwrap();
+            auction_list.append(&stored_auction_list);
+        }
+
+        // save auction list & bump lifetime to 1 month.
+        auction_list.push_back(new_auction_data);
+        env.storage()
+            .persistent()
+            .set(&DataKey::AuctionList, &auction_list);
+        env.storage()
+            .persistent()
+            .bump(&user, LEDGER_AMOUNT_IN_1_MONTH, LEDGER_AMOUNT_IN_1_MONTH);
+
+        // save updated cow data & bump lifetime to 24 hours.
+        env.storage().temporary().set(&cow_id, &cow_data);
+        env.storage().temporary().bump(
+            &cow_id,
+            LEDGER_AMOUNT_IN_24_HOURS,
+            LEDGER_AMOUNT_IN_24_HOURS,
+        );
+
+        // bump user lifetime to 1 week.
+        env.storage()
+            .persistent()
+            .bump(&user, LEDGER_AMOUNT_IN_1_WEEK, LEDGER_AMOUNT_IN_1_WEEK);
+
+        Status::Ok
     }
 }
 
