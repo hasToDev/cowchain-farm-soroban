@@ -1,6 +1,8 @@
 #![no_std]
 
-use soroban_sdk::{contract, contractimpl, token, Address, BytesN, Env, String, Symbol, Vec};
+use soroban_sdk::{
+    contract, contractimpl, symbol_short, token, Address, BytesN, Env, String, Symbol, Vec,
+};
 
 use crate::constants::*;
 use crate::enums::*;
@@ -198,6 +200,15 @@ impl CowContractTrait for CowContract {
             LEDGER_AMOUNT_IN_24_HOURS,
         );
 
+        // publish Cowchain Farm BUY event
+        let new_cow_event = CowEventDetails {
+            id: new_cow_data.id.clone(),
+            name: new_cow_data.name.clone(),
+            owner: user,
+            last_fed_ledger: env.ledger().sequence(),
+        };
+        env.events().publish((symbol_short!("buy"),), new_cow_event);
+
         BuyCowResult {
             status: Status::Ok,
             cow_data: new_cow_data,
@@ -269,6 +280,16 @@ impl CowContractTrait for CowContract {
 
         // remove cow data from storage.
         env.storage().temporary().remove(&cow_id);
+
+        // publish Cowchain Farm SELL event
+        let new_cow_event = CowEventDetails {
+            id: cow_data.id.clone(),
+            name: cow_data.name.clone(),
+            owner: user,
+            last_fed_ledger: cow_data.last_fed_ledger.clone(),
+        };
+        env.events()
+            .publish((symbol_short!("sell"),), new_cow_event);
 
         SellCowResult {
             status: Status::Ok,
@@ -371,6 +392,16 @@ impl CowContractTrait for CowContract {
             .persistent()
             .bump(&user, LEDGER_AMOUNT_IN_1_WEEK, LEDGER_AMOUNT_IN_1_WEEK);
 
+        // publish Cowchain Farm FEED event
+        let new_cow_event = CowEventDetails {
+            id: cow_data.id.clone(),
+            name: cow_data.name.clone(),
+            owner: user,
+            last_fed_ledger: cow_data.last_fed_ledger.clone(),
+        };
+        env.events()
+            .publish((symbol_short!("feed"),), new_cow_event);
+
         CowStatus {
             status: Status::Ok,
             ledger: cow_data.last_fed_ledger,
@@ -408,6 +439,23 @@ impl CowContractTrait for CowContract {
             status: Status::Ok,
             data: cow_data_list,
         }
+    }
+
+    // ! TESTNET DEVELOPMENT
+    // ! ----------------------------------------------------------------------------
+    fn pub_auction(env: Env, user: Address) -> u32 {
+        // new cow event
+        let new_cow_event = CowEventDetails {
+            id: String::from_slice(&env, "qKRoefgNAp321"),
+            name: symbol_short!("mainland"),
+            owner: user,
+            last_fed_ledger: env.ledger().sequence(),
+        };
+        // publish cow event
+        env.events()
+            .publish((symbol_short!("auction"),), new_cow_event);
+        // give success result
+        env.ledger().sequence()
     }
 }
 

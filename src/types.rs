@@ -1,5 +1,5 @@
 use crate::enums::{CowBreed, Status};
-use soroban_sdk::{contracttype, symbol_short, Env, String, Symbol, Vec};
+use soroban_sdk::{contracttype, symbol_short, Address, Env, String, Symbol, Vec};
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
@@ -114,4 +114,13 @@ impl CowFeedingStats {
             forget: 0,
         }
     }
+}
+
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
+pub struct CowEventDetails {
+    pub id: String,
+    pub name: Symbol,
+    pub owner: Address,
+    pub last_fed_ledger: u32,
 }
