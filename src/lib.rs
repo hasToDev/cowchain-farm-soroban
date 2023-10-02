@@ -142,17 +142,12 @@ impl CowContractTrait for CowContract {
         // get user balance.
         let user_native_token_balance: i128 = native_token_client.balance(&user);
 
-        // here we set a rule that the user must have a minimum balance of 1.5 XLM.
-        // 1 XLM for Stellar network minimum requirement + 0.5 XLM (or more) for operation expenses.
-        // 1.5 XLM is equal to 15_000_000 stroops
-        let minimum_user_balance: i128 = 15_000_000;
-
         // get cow price based on their breed (the price will be in stroops unit).
         let cow_price_in_stroops: i128 = get_cow_base_price_in_stroops(&cow_breed);
 
         // find out the approximate user balance after transaction.
         let user_balance_after_tx: i128 =
-            user_native_token_balance - minimum_user_balance - cow_price_in_stroops.clone();
+            user_native_token_balance - MINIMUM_USER_BALANCE - cow_price_in_stroops.clone();
 
         // cancel the transaction if user balance after transaction equal or less than zero.
         if user_balance_after_tx <= 0 {
@@ -488,12 +483,12 @@ impl CowContractTrait for CowContract {
 
         let new_auction_data = AuctionData {
             auction_id: auction_id.clone(),
-            cow_id,
+            cow_id: cow_id.clone(),
             cow_name: cow_data.name.clone(),
             cow_breed: cow_data.breed.clone(),
             cow_born_ledger: cow_data.born_ledger.clone(),
             owner: user.clone(),
-            start_price: price as i128,
+            start_price: price.clone() as i128,
             highest_bidder: Bidder {
                 user: user.clone(),
                 price: price as i128,
@@ -551,6 +546,88 @@ impl CowContractTrait for CowContract {
             .bump(&user, LEDGER_AMOUNT_IN_1_WEEK, LEDGER_AMOUNT_IN_1_WEEK);
 
         Status::Ok
+    }
+
+    fn bidding(env: Env, user: Address, auction_id: String, bid_price: u32) -> AuctionResult {
+        // ensures that user has authorized invocation of this contract.
+        user.require_auth();
+
+        // if Native Token key not exist, contract has not been initialized.
+        let is_native_token_exist = env.storage().instance().has(&DataKey::NativeToken);
+        if !is_native_token_exist {
+            return AuctionResult::default(env, Status::NotInitialized);
+        }
+
+        // check if auction still on going.
+        let is_auction_alive = env.storage().temporary().has(&auction_id);
+        if !is_auction_alive {
+            return AuctionResult::default(env, Status::NotFound);
+        }
+
+        let mut auction_data: AuctionData = env.storage().temporary().get(&auction_id).unwrap();
+
+        // check if bidding is still open.
+        if auction_data.auction_limit_ledger < env.ledger().sequence() {
+            return AuctionResult::default(env, Status::BidIsClosed);
+        }
+
+        // check for bidding price.
+        if (bid_price as i128) <= auction_data.highest_bidder.price {
+            return AuctionResult::default(env, Status::CannotBidLower);
+        }
+
+        // initiate native token client & check user balance.
+        let native_token: Address = env.storage().instance().get(&DataKey::NativeToken).unwrap();
+        let native_token_client = token::Client::new(&env, &native_token);
+        let user_native_token_balance: i128 = native_token_client.balance(&user);
+        let bid_amount = (bid_price as i128) * 10_000_000;
+        let user_balance_after_tx: i128 =
+            user_native_token_balance - MINIMUM_USER_BALANCE - bid_amount.clone();
+        if user_balance_after_tx <= 0 {
+            return AuctionResult::default(env, Status::InsufficientFund);
+        }
+
+        // transfer native token to contract address to complete the bidding process.
+        native_token_client.transfer(&user, &env.current_contract_address(), &bid_amount);
+
+        // refund the previous highest bidder funds
+        if auction_data.owner.ne(&auction_data.highest_bidder.user) {
+            let refund_amount = auction_data.highest_bidder.price * 10_000_000;
+            native_token_client.transfer(
+                &env.current_contract_address(),
+                &auction_data.highest_bidder.user,
+                &refund_amount,
+            );
+
+            // publish Cowchain Farm REFUND event
+            let new_auction_event = AuctionEventDetails {
+                auction_id: auction_data.cow_id.clone(),
+                bidder: auction_data.highest_bidder.user.clone(),
+                price: auction_data.highest_bidder.price.clone(),
+            };
+            env.events()
+                .publish((symbol_short!("refund"),), new_auction_event);
+        }
+
+        // update auction data.
+        auction_data
+            .bid_history
+            .push_back(auction_data.highest_bidder.clone());
+        auction_data.highest_bidder = Bidder {
+            user,
+            price: bid_price as i128,
+        };
+
+        // save updated auction data.
+        env.storage().temporary().set(&auction_id, &auction_data);
+
+        // return result
+        let mut result: Vec<AuctionData> = Vec::new(&env);
+        result.push_back(auction_data);
+        AuctionResult {
+            status: Status::Ok,
+            auction_data: result,
+        }
     }
 }
 

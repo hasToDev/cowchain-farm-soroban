@@ -28,6 +28,8 @@ pub enum Status {
     MissingOwnership,
     FullStomach,
     OnAuction,
+    BidIsClosed,
+    CannotBidLower,
 }
 
 #[contracttype]

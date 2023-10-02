@@ -34,6 +34,7 @@ pub trait CowContractTrait {
         cow_breed: CowBreed,
     ) -> BuyCowResult;
 
+    // TODO: forbid sale if auction ID is exist
     /// [CowContract::sell_cow]
     /// Sell Cow to supplier
     fn sell_cow(env: Env, user: Address, cow_id: String) -> SellCowResult;
@@ -63,4 +64,8 @@ pub trait CowContractTrait {
         auction_id: String,
         price: u32,
     ) -> Status;
+
+    /// [CowContract::bidding]
+    /// Bidding the auction
+    fn bidding(env: Env, user: Address, auction_id: String, bid_price: u32) -> AuctionResult;
 }

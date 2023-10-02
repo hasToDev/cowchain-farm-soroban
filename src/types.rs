@@ -148,3 +148,27 @@ pub struct Bidder {
     pub user: Address,
     pub price: i128,
 }
+
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
+pub struct AuctionEventDetails {
+    pub auction_id: String,
+    pub bidder: Address,
+    pub price: i128,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
+pub struct AuctionResult {
+    pub status: Status,
+    pub auction_data: Vec<AuctionData>,
+}
+
+impl AuctionResult {
+    pub fn default(env: Env, return_status: Status) -> Self {
+        Self {
+            status: return_status,
+            auction_data: Vec::new(&env),
+        }
+    }
+}
