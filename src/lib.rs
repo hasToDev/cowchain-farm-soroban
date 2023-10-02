@@ -487,7 +487,7 @@ impl CowContractTrait for CowContract {
         cow_data.auction_id = auction_id.clone();
 
         let new_auction_data = AuctionData {
-            auction_id,
+            auction_id: auction_id.clone(),
             cow_id,
             cow_name: cow_data.name.clone(),
             cow_breed: cow_data.breed.clone(),
@@ -503,12 +503,12 @@ impl CowContractTrait for CowContract {
         };
 
         // Create and/or append auction list
-        let mut auction_list: Vec<AuctionData> = Vec::new(&env);
+        let mut auction_list: Vec<String> = Vec::new(&env);
         // if auction data exist, append the data to auction list.
         let is_list_exist = env.storage().persistent().has(&DataKey::AuctionList);
         if is_list_exist {
             // get current ownership data.
-            let stored_auction_list: Vec<AuctionData> = env
+            let stored_auction_list: Vec<String> = env
                 .storage()
                 .persistent()
                 .get(&DataKey::AuctionList)
@@ -517,13 +517,25 @@ impl CowContractTrait for CowContract {
         }
 
         // save auction list & bump lifetime to 1 month.
-        auction_list.push_back(new_auction_data);
+        auction_list.push_back(auction_id.clone());
         env.storage()
             .persistent()
             .set(&DataKey::AuctionList, &auction_list);
+        env.storage().persistent().bump(
+            &DataKey::AuctionList,
+            LEDGER_AMOUNT_IN_1_MONTH,
+            LEDGER_AMOUNT_IN_1_MONTH,
+        );
+
+        // save auction data & bump lifetime to 48 hours.
         env.storage()
-            .persistent()
-            .bump(&user, LEDGER_AMOUNT_IN_1_MONTH, LEDGER_AMOUNT_IN_1_MONTH);
+            .temporary()
+            .set(&auction_id, &new_auction_data);
+        env.storage().temporary().bump(
+            &auction_id,
+            LEDGER_AMOUNT_IN_48_HOURS,
+            LEDGER_AMOUNT_IN_48_HOURS,
+        );
 
         // save updated cow data & bump lifetime to 24 hours.
         env.storage().temporary().set(&cow_id, &cow_data);

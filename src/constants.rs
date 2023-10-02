@@ -2,6 +2,7 @@
 // Assuming ledger closed time is 5 seconds/ledger.
 //
 pub const LEDGER_AMOUNT_IN_24_HOURS: u32 = 17280;
+pub const LEDGER_AMOUNT_IN_48_HOURS: u32 = 34560;
 pub const LEDGER_AMOUNT_IN_3_DAYS: u32 = 51840;
 pub const LEDGER_AMOUNT_IN_1_WEEK: u32 = 120960;
 pub const LEDGER_AMOUNT_IN_1_MONTH: u32 = 483840;
