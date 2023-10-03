@@ -72,4 +72,8 @@ pub trait CowContractTrait {
     /// [CowContract::finalize_auction]
     /// Finalize the auction
     fn finalize_auction(env: Env, auction_id: String) -> AuctionResult;
+
+    /// [CowContract::get_all_auction]
+    /// Retrieve all auction data
+    fn get_all_auction(env: Env) -> AuctionResult;
 }

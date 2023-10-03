@@ -17,7 +17,7 @@ mod types;
 #[contract]
 pub struct CowContract;
 
-#[contractimpl]
+// #[contractimpl]
 impl CowContractTrait for CowContract {
     fn init(env: Env, admin: Address, native_token: Address, message: String) -> Status {
         // check for initialization password.
@@ -800,6 +800,39 @@ impl CowContractTrait for CowContract {
         AuctionResult {
             status: Status::Ok,
             auction_data: result,
+        }
+    }
+
+    fn get_all_auction(env: Env) -> AuctionResult {
+        // check if auction list exist.
+        let is_list_exist = env.storage().persistent().has(&DataKey::AuctionList);
+        if !is_list_exist {
+            return AuctionResult::default(env, Status::NotFound);
+        }
+
+        // get auction list.
+        let stored_auction_list: Vec<String> = env
+            .storage()
+            .persistent()
+            .get(&DataKey::AuctionList)
+            .unwrap();
+
+        // get all auction data.
+        let mut auction_data_list: Vec<AuctionData> = Vec::new(&env);
+        for auction_id in stored_auction_list {
+            // check if the auction is still not finalized.
+            let is_auction_alive = env.storage().temporary().has(&auction_id);
+            if !is_auction_alive {
+                continue;
+            }
+            let auction_data: AuctionData = env.storage().temporary().get(&auction_id).unwrap();
+            auction_data_list.push_back(auction_data);
+        }
+
+        // return result
+        AuctionResult {
+            status: Status::Ok,
+            auction_data: auction_data_list,
         }
     }
 }
