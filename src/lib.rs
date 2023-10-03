@@ -17,7 +17,7 @@ mod types;
 #[contract]
 pub struct CowContract;
 
-// #[contractimpl]
+#[contractimpl]
 impl CowContractTrait for CowContract {
     fn init(env: Env, admin: Address, native_token: Address, message: String) -> Status {
         // check for initialization password.
@@ -466,12 +466,12 @@ impl CowContractTrait for CowContract {
         cow_id: String,
         auction_id: String,
         price: u32,
-    ) -> Status {
+    ) -> AuctionResult {
         // check Admin key in storage.
         // if Admin key not exist, contract has not been initialized.
         let is_admin_exist = env.storage().instance().has(&DataKey::Admin);
         if !is_admin_exist {
-            return Status::NotInitialized;
+            return AuctionResult::default(env, Status::NotInitialized);
         }
 
         // ensures that user has authorized invocation of this contract.
@@ -480,7 +480,7 @@ impl CowContractTrait for CowContract {
         // check if cow still alive.
         let is_cow_alive = env.storage().temporary().has(&cow_id);
         if !is_cow_alive {
-            return Status::NotFound;
+            return AuctionResult::default(env, Status::NotFound);
         }
 
         // Set CowData's auction ID to indicate that this cow is being auctioned.
@@ -546,7 +546,13 @@ impl CowContractTrait for CowContract {
             .persistent()
             .bump(&user, LEDGER_AMOUNT_IN_1_WEEK, LEDGER_AMOUNT_IN_1_WEEK);
 
-        Status::Ok
+        // return result
+        let mut result: Vec<AuctionData> = Vec::new(&env);
+        result.push_back(new_auction_data);
+        AuctionResult {
+            status: Status::Ok,
+            auction_data: result,
+        }
     }
 
     fn bidding(env: Env, user: Address, auction_id: String, bid_price: u32) -> AuctionResult {

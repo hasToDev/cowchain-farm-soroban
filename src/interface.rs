@@ -63,7 +63,7 @@ pub trait CowContractTrait {
         cow_id: String,
         auction_id: String,
         price: u32,
-    ) -> Status;
+    ) -> AuctionResult;
 
     /// [CowContract::bidding]
     /// Bidding the auction
