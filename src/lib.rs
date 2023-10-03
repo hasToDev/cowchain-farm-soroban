@@ -213,6 +213,8 @@ impl CowContractTrait for CowContract {
     }
 
     fn sell_cow(env: Env, user: Address, cow_id: String) -> SellCowResult {
+        // todo: check for auction ID, if empty continue selling, if exist then reject selling
+
         // ensures that user has authorized invocation of this contract.
         user.require_auth();
 
@@ -265,8 +267,12 @@ impl CowContractTrait for CowContract {
 
         // get ownership list and remove Cow ID.
         let mut cow_ownership_list: Vec<String> = env.storage().persistent().get(&user).unwrap();
-        let index = cow_ownership_list.first_index_of(&cow_id).unwrap();
-        cow_ownership_list.remove_unchecked(index);
+        let index = cow_ownership_list
+            .first_index_of(&cow_id)
+            .unwrap_or(787737380);
+        if index.ne(&787737380) {
+            cow_ownership_list.remove_unchecked(index);
+        }
 
         // save new ownership data & bump lifetime to 1 week.
         env.storage().persistent().set(&user, &cow_ownership_list);
@@ -502,7 +508,7 @@ impl CowContractTrait for CowContract {
         // if auction data exist, append the data to auction list.
         let is_list_exist = env.storage().persistent().has(&DataKey::AuctionList);
         if is_list_exist {
-            // get current ownership data.
+            // get current auction list data.
             let stored_auction_list: Vec<String> = env
                 .storage()
                 .persistent()
@@ -532,13 +538,8 @@ impl CowContractTrait for CowContract {
             LEDGER_AMOUNT_IN_48_HOURS,
         );
 
-        // save updated cow data & bump lifetime to 24 hours.
+        // save updated cow data.
         env.storage().temporary().set(&cow_id, &cow_data);
-        env.storage().temporary().bump(
-            &cow_id,
-            LEDGER_AMOUNT_IN_24_HOURS,
-            LEDGER_AMOUNT_IN_24_HOURS,
-        );
 
         // bump user lifetime to 1 week.
         env.storage()
@@ -601,7 +602,7 @@ impl CowContractTrait for CowContract {
 
             // publish Cowchain Farm REFUND event
             let new_auction_event = AuctionEventDetails {
-                auction_id: auction_data.cow_id.clone(),
+                auction_id: auction_data.auction_id.clone(),
                 bidder: auction_data.highest_bidder.user.clone(),
                 price: auction_data.highest_bidder.price.clone(),
             };
@@ -614,12 +615,184 @@ impl CowContractTrait for CowContract {
             .bid_history
             .push_back(auction_data.highest_bidder.clone());
         auction_data.highest_bidder = Bidder {
-            user,
+            user: user.clone(),
             price: bid_price as i128,
         };
 
         // save updated auction data.
         env.storage().temporary().set(&auction_id, &auction_data);
+
+        // bump user lifetime to 1 week.
+        env.storage()
+            .persistent()
+            .bump(&user, LEDGER_AMOUNT_IN_1_WEEK, LEDGER_AMOUNT_IN_1_WEEK);
+
+        // return result
+        let mut result: Vec<AuctionData> = Vec::new(&env);
+        result.push_back(auction_data);
+        AuctionResult {
+            status: Status::Ok,
+            auction_data: result,
+        }
+    }
+
+    fn finalize_auction(env: Env, auction_id: String) -> AuctionResult {
+        // check if the auction is still not finalized.
+        let is_auction_alive = env.storage().temporary().has(&auction_id);
+        if !is_auction_alive {
+            return AuctionResult::default(env, Status::NotFound);
+        }
+
+        let auction_data: AuctionData = env.storage().temporary().get(&auction_id).unwrap();
+
+        // check if bidding is closed.
+        if auction_data.auction_limit_ledger >= env.ledger().sequence() {
+            return AuctionResult::default(env, Status::BidIsOpen);
+        }
+
+        // check if cow still alive.
+        let is_cow_alive = env.storage().temporary().has(&auction_data.cow_id);
+
+        // for zero bid.
+        if auction_data.owner.eq(&auction_data.highest_bidder.user) {
+            // when cow is not alive.
+            if !is_cow_alive {
+                // remove auction id.
+                env.storage().temporary().remove(&auction_id);
+                return AuctionResult::default(env, Status::Ok);
+            }
+
+            let mut cow_data: CowData =
+                env.storage().temporary().get(&auction_data.cow_id).unwrap();
+            cow_data.auction_id = String::from_slice(&env, "");
+
+            // remove auction id.
+            env.storage().temporary().remove(&auction_id);
+            // save updated cow data.
+            env.storage()
+                .temporary()
+                .set(&auction_data.cow_id, &cow_data);
+
+            return AuctionResult::default(env, Status::Ok);
+        }
+
+        // for existing bids.
+        // initiate native token client.
+        let native_token: Address = env.storage().instance().get(&DataKey::NativeToken).unwrap();
+        let native_token_client = token::Client::new(&env, &native_token);
+        let bid_amount = auction_data.highest_bidder.price * 10_000_000;
+
+        // when cow is not alive.
+        if !is_cow_alive {
+            // refund bidder, cannot transfer died cow, lol.
+            native_token_client.transfer(
+                &env.current_contract_address(),
+                &auction_data.highest_bidder.user,
+                &bid_amount,
+            );
+
+            // publish Cowchain Farm REFUND event
+            let new_auction_event = AuctionEventDetails {
+                auction_id: auction_data.auction_id.clone(),
+                bidder: auction_data.highest_bidder.user.clone(),
+                price: auction_data.highest_bidder.price.clone(),
+            };
+            env.events()
+                .publish((symbol_short!("refund"),), new_auction_event);
+
+            // remove auction id.
+            env.storage().temporary().remove(&auction_id);
+            return AuctionResult::default(env, Status::Ok);
+        }
+
+        // transfer fund to PREVIOUS owner.
+        native_token_client.transfer(
+            &env.current_contract_address(),
+            &auction_data.owner,
+            &bid_amount,
+        );
+
+        // update PREVIOUS ownership, save data & bump lifetime to 1 week.
+        let mut ownership: Vec<String> =
+            env.storage().persistent().get(&auction_data.owner).unwrap();
+        let index = ownership
+            .first_index_of(&auction_data.cow_id)
+            .unwrap_or(787737380);
+        if index.ne(&787737380) {
+            ownership.remove_unchecked(index);
+        }
+
+        env.storage()
+            .persistent()
+            .set(&auction_data.owner, &ownership);
+        env.storage().persistent().bump(
+            &auction_data.owner,
+            LEDGER_AMOUNT_IN_1_WEEK,
+            LEDGER_AMOUNT_IN_1_WEEK,
+        );
+
+        // update NEW ownership, save data & bump lifetime to 1 week.
+        ownership = env
+            .storage()
+            .persistent()
+            .get(&auction_data.highest_bidder.user)
+            .unwrap();
+        ownership.push_back(auction_data.cow_id.clone());
+
+        env.storage()
+            .persistent()
+            .set(&auction_data.highest_bidder.user, &ownership);
+        env.storage().persistent().bump(
+            &auction_data.highest_bidder.user,
+            LEDGER_AMOUNT_IN_1_WEEK,
+            LEDGER_AMOUNT_IN_1_WEEK,
+        );
+
+        // update auction list
+        let is_list_exist = env.storage().persistent().has(&DataKey::AuctionList);
+        if is_list_exist {
+            // get current auction list data.
+            let mut stored_auction_list: Vec<String> = env
+                .storage()
+                .persistent()
+                .get(&DataKey::AuctionList)
+                .unwrap();
+            let index = stored_auction_list
+                .first_index_of(&auction_id)
+                .unwrap_or(787737380);
+            if index.ne(&787737380) {
+                stored_auction_list.remove_unchecked(index);
+            }
+
+            // save updated auction list & bump lifetime to 1 month.
+            env.storage()
+                .persistent()
+                .set(&DataKey::AuctionList, &stored_auction_list);
+            env.storage().persistent().bump(
+                &DataKey::AuctionList,
+                LEDGER_AMOUNT_IN_1_MONTH,
+                LEDGER_AMOUNT_IN_1_MONTH,
+            );
+        }
+
+        let mut cow_data: CowData = env.storage().temporary().get(&auction_data.cow_id).unwrap();
+        cow_data.auction_id = String::from_slice(&env, "");
+
+        // remove auction id.
+        env.storage().temporary().remove(&auction_id);
+        // save updated cow data.
+        env.storage()
+            .temporary()
+            .set(&auction_data.cow_id, &cow_data);
+
+        // publish Cowchain Farm AUCTION event
+        let new_auction_event = AuctionEventDetails {
+            auction_id: auction_data.auction_id.clone(),
+            bidder: auction_data.highest_bidder.user.clone(),
+            price: auction_data.highest_bidder.price.clone(),
+        };
+        env.events()
+            .publish((symbol_short!("auction"),), new_auction_event);
 
         // return result
         let mut result: Vec<AuctionData> = Vec::new(&env);

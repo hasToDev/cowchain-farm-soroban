@@ -95,7 +95,7 @@ impl CowData {
             born_ledger: 0,
             last_fed_ledger: 0,
             feeding_stats: CowFeedingStats::default(),
-            auction_id: String::from_slice(&env, "-"),
+            auction_id: String::from_slice(&env, ""),
         }
     }
 }

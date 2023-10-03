@@ -29,6 +29,7 @@ pub enum Status {
     FullStomach,
     OnAuction,
     BidIsClosed,
+    BidIsOpen,
     CannotBidLower,
 }
 

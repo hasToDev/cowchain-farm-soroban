@@ -68,4 +68,8 @@ pub trait CowContractTrait {
     /// [CowContract::bidding]
     /// Bidding the auction
     fn bidding(env: Env, user: Address, auction_id: String, bid_price: u32) -> AuctionResult;
+
+    /// [CowContract::finalize_auction]
+    /// Finalize the auction
+    fn finalize_auction(env: Env, auction_id: String) -> AuctionResult;
 }
