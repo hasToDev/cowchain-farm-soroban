@@ -59,7 +59,7 @@ pub struct CowAppraisalResult {
 }
 
 impl CowAppraisalResult {
-    pub fn default(return_status: Status) -> Self {
+    pub fn new(return_status: Status) -> Self {
         Self {
             status: return_status,
             price: 0,

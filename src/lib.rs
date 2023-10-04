@@ -306,7 +306,7 @@ impl CowContractTrait for CowContract {
         // check if cow still alive.
         let is_cow_alive = env.storage().temporary().has(&cow_id);
         if !is_cow_alive {
-            return CowAppraisalResult::default(Status::NotFound);
+            return CowAppraisalResult::new(Status::NotFound);
         }
 
         // get cow price based on their breed (the price will be in XLM unit).
