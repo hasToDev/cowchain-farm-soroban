@@ -43,7 +43,7 @@ pub struct SellCowResult {
 }
 
 impl SellCowResult {
-    pub fn default(env: Env, return_status: Status) -> Self {
+    pub fn new(env: Env, return_status: Status) -> Self {
         Self {
             status: return_status,
             ownership: Vec::new(&env),

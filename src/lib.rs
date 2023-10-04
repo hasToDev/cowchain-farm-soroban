@@ -224,19 +224,19 @@ impl CowContractTrait for CowContract {
         // if Native Token key not exist, contract has not been initialized.
         let is_native_token_exist = env.storage().instance().has(&DataKey::NativeToken);
         if !is_native_token_exist {
-            return SellCowResult::default(env, Status::NotInitialized);
+            return SellCowResult::new(env, Status::NotInitialized);
         }
 
         // check if cow still alive.
         let is_cow_alive = env.storage().temporary().has(&cow_id);
         if !is_cow_alive {
-            return SellCowResult::default(env, Status::NotFound);
+            return SellCowResult::new(env, Status::NotFound);
         }
 
         // check if ownership data exist.
         let is_ownership_exist = env.storage().persistent().has(&user);
         if !is_ownership_exist {
-            return SellCowResult::default(env, Status::MissingOwnership);
+            return SellCowResult::new(env, Status::MissingOwnership);
         }
 
         // get cow data.
@@ -247,7 +247,7 @@ impl CowContractTrait for CowContract {
         let current_ledger: u32 = env.ledger().sequence();
         let cow_age: u32 = current_ledger - cow_data.born_ledger;
         if cow_age < LEDGER_AMOUNT_IN_3_DAYS {
-            return SellCowResult::default(env, Status::Underage);
+            return SellCowResult::new(env, Status::Underage);
         }
 
         // calculate cow selling price.
@@ -262,7 +262,7 @@ impl CowContractTrait for CowContract {
         let contract_native_token_balance: i128 =
             native_token_client.balance(&env.current_contract_address());
         if contract_native_token_balance < cow_selling_price {
-            return SellCowResult::default(env, Status::InsufficientFund);
+            return SellCowResult::new(env, Status::InsufficientFund);
         }
 
         // transfer native token to user to complete the selling process.
