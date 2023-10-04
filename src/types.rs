@@ -151,7 +151,7 @@ pub struct AuctionResult {
 }
 
 impl AuctionResult {
-    pub fn default(env: Env, return_status: Status) -> Self {
+    pub fn new(env: Env, return_status: Status) -> Self {
         Self {
             status: return_status,
             auction_data: Vec::new(&env),

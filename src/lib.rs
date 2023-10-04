@@ -474,7 +474,7 @@ impl CowContractTrait for CowContract {
         // if Admin key not exist, contract has not been initialized.
         let is_admin_exist = env.storage().instance().has(&DataKey::Admin);
         if !is_admin_exist {
-            return AuctionResult::default(env, Status::NotInitialized);
+            return AuctionResult::new(env, Status::NotInitialized);
         }
 
         // ensures that user has authorized invocation of this contract.
@@ -483,7 +483,7 @@ impl CowContractTrait for CowContract {
         // check if cow still alive.
         let is_cow_alive = env.storage().temporary().has(&cow_id);
         if !is_cow_alive {
-            return AuctionResult::default(env, Status::NotFound);
+            return AuctionResult::new(env, Status::NotFound);
         }
 
         // Set CowData's auction ID to indicate that this cow is being auctioned.
@@ -565,25 +565,25 @@ impl CowContractTrait for CowContract {
         // if Native Token key not exist, contract has not been initialized.
         let is_native_token_exist = env.storage().instance().has(&DataKey::NativeToken);
         if !is_native_token_exist {
-            return AuctionResult::default(env, Status::NotInitialized);
+            return AuctionResult::new(env, Status::NotInitialized);
         }
 
         // check if auction still on going.
         let is_auction_alive = env.storage().temporary().has(&auction_id);
         if !is_auction_alive {
-            return AuctionResult::default(env, Status::NotFound);
+            return AuctionResult::new(env, Status::NotFound);
         }
 
         let mut auction_data: AuctionData = env.storage().temporary().get(&auction_id).unwrap();
 
         // check if bidding is still open.
         if auction_data.auction_limit_ledger < env.ledger().sequence() {
-            return AuctionResult::default(env, Status::BidIsClosed);
+            return AuctionResult::new(env, Status::BidIsClosed);
         }
 
         // check for bidding price.
         if (bid_price as i128) <= auction_data.highest_bidder.price {
-            return AuctionResult::default(env, Status::CannotBidLower);
+            return AuctionResult::new(env, Status::CannotBidLower);
         }
 
         // initiate native token client & check user balance.
@@ -594,7 +594,7 @@ impl CowContractTrait for CowContract {
         let user_balance_after_tx: i128 =
             user_native_token_balance - MINIMUM_USER_BALANCE - bid_amount.clone();
         if user_balance_after_tx <= 0 {
-            return AuctionResult::default(env, Status::InsufficientFund);
+            return AuctionResult::new(env, Status::InsufficientFund);
         }
 
         // transfer native token to contract address to complete the bidding process.
@@ -649,14 +649,14 @@ impl CowContractTrait for CowContract {
         // check if the auction is still not finalized.
         let is_auction_alive = env.storage().temporary().has(&auction_id);
         if !is_auction_alive {
-            return AuctionResult::default(env, Status::NotFound);
+            return AuctionResult::new(env, Status::NotFound);
         }
 
         let auction_data: AuctionData = env.storage().temporary().get(&auction_id).unwrap();
 
         // check if bidding is closed.
         if auction_data.auction_limit_ledger >= env.ledger().sequence() {
-            return AuctionResult::default(env, Status::BidIsOpen);
+            return AuctionResult::new(env, Status::BidIsOpen);
         }
 
         // check if cow still alive.
@@ -668,7 +668,7 @@ impl CowContractTrait for CowContract {
             if !is_cow_alive {
                 // remove auction id.
                 env.storage().temporary().remove(&auction_id);
-                return AuctionResult::default(env, Status::Ok);
+                return AuctionResult::new(env, Status::Ok);
             }
 
             let mut cow_data: CowData =
@@ -682,7 +682,7 @@ impl CowContractTrait for CowContract {
                 .temporary()
                 .set(&auction_data.cow_id, &cow_data);
 
-            return AuctionResult::default(env, Status::Ok);
+            return AuctionResult::new(env, Status::Ok);
         }
 
         // for existing bids.
@@ -711,7 +711,7 @@ impl CowContractTrait for CowContract {
 
             // remove auction id.
             env.storage().temporary().remove(&auction_id);
-            return AuctionResult::default(env, Status::Ok);
+            return AuctionResult::new(env, Status::Ok);
         }
 
         // transfer fund to PREVIOUS owner.
@@ -816,7 +816,7 @@ impl CowContractTrait for CowContract {
         // check if auction list exist.
         let is_list_exist = env.storage().persistent().has(&DataKey::AuctionList);
         if !is_list_exist {
-            return AuctionResult::default(env, Status::NotFound);
+            return AuctionResult::new(env, Status::NotFound);
         }
 
         // get auction list.
