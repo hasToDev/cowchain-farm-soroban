@@ -86,20 +86,6 @@ pub struct CowData {
     pub auction_id: String,
 }
 
-impl CowData {
-    pub fn default(env: Env) -> Self {
-        Self {
-            id: String::from_slice(&env, ""),
-            name: symbol_short!(""),
-            breed: CowBreed::Jersey,
-            born_ledger: 0,
-            last_fed_ledger: 0,
-            feeding_stats: CowFeedingStats::default(),
-            auction_id: String::from_slice(&env, ""),
-        }
-    }
-}
-
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
 pub struct CowFeedingStats {
@@ -109,7 +95,7 @@ pub struct CowFeedingStats {
 }
 
 impl CowFeedingStats {
-    pub fn default() -> Self {
+    pub fn new() -> Self {
         Self {
             on_time: 0,
             late: 0,

@@ -168,7 +168,7 @@ impl CowContractTrait for CowContract {
             breed: cow_breed,
             born_ledger: env.ledger().sequence(),
             last_fed_ledger: env.ledger().sequence(),
-            feeding_stats: CowFeedingStats::default(),
+            feeding_stats: CowFeedingStats::new(),
             auction_id: String::from_slice(&env, "-"),
         };
         let mut cow_ownership_list: Vec<String> = Vec::new(&env);
