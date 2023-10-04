@@ -50,10 +50,6 @@ pub trait CowContractTrait {
     /// Retrieve all cow data listed in ownership
     fn get_all_cow(env: Env, user: Address) -> GetAllCowResult;
 
-    // ! TESTNET DEVELOPMENT
-    // ! ----------------------------------------------------------------------------
-    fn pub_auction(env: Env, user: Address) -> u32;
-
     /// [CowContract::register_auction]
     /// Registering cow for auction
     fn register_auction(

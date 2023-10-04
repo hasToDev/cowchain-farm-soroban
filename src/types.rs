@@ -1,4 +1,4 @@
-use crate::enums::{CowBreed, Status};
+use crate::enums::{CowBreed, CowGender, Status};
 use soroban_sdk::{contracttype, Address, Env, String, Symbol, Vec};
 
 #[contracttype]
@@ -80,6 +80,7 @@ pub struct CowData {
     pub id: String,
     pub name: Symbol,
     pub breed: CowBreed,
+    pub gender: CowGender,
     pub born_ledger: u32,
     pub last_fed_ledger: u32,
     pub feeding_stats: CowFeedingStats,

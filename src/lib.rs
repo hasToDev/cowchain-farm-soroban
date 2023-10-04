@@ -12,6 +12,7 @@ use crate::types::*;
 mod constants;
 mod enums;
 mod interface;
+mod test;
 mod types;
 
 #[contract]
@@ -21,10 +22,10 @@ pub struct CowContract;
 impl CowContractTrait for CowContract {
     fn init(env: Env, admin: Address, native_token: Address, message: String) -> Status {
         // check for initialization password.
-        // you must set your own unique password other than "9p2Vx4Dr8wp365n7C5rB42xN9".
+        // you must set your own unique password other than "y3QKiJ5iq7y9JGAfN23vY8hwXa".
         // you can use the Deployer contract instead for this check.
         // the main purpose is to prevent other people from initializing your contract.
-        let internal_password = String::from_slice(&env, "9p2Vx4Dr8wp365n7C5rB42xN9");
+        let internal_password = String::from_slice(&env, "y3QKiJ5iq7y9JGAfN23vY8hwXa");
         if message.ne(&internal_password) {
             return Status::TryAgain;
         }
@@ -129,6 +130,13 @@ impl CowContractTrait for CowContract {
         // ensures that user has authorized invocation of this contract.
         user.require_auth();
 
+        // random Cow Gender
+        let mut cow_gender = CowGender::Male;
+        let value = env.prng().u64_in_range(1..=6);
+        if value % 2 == 0 {
+            cow_gender = CowGender::Female;
+        }
+
         // if Native Token key not exist, contract has not been initialized.
         let is_native_token_exist = env.storage().instance().has(&DataKey::NativeToken);
         if !is_native_token_exist {
@@ -170,8 +178,9 @@ impl CowContractTrait for CowContract {
         // new cow data.
         let new_cow_data = CowData {
             id: cow_id.clone(),
-            name: cow_name,
+            name: cow_name.clone(),
             breed: cow_breed,
+            gender: cow_gender,
             born_ledger: env.ledger().sequence(),
             last_fed_ledger: env.ledger().sequence(),
             feeding_stats: CowFeedingStats::new(),
@@ -469,23 +478,6 @@ impl CowContractTrait for CowContract {
             status: Status::Ok,
             data: cow_data_list,
         }
-    }
-
-    // ! TESTNET DEVELOPMENT
-    // ! ----------------------------------------------------------------------------
-    fn pub_auction(env: Env, user: Address) -> u32 {
-        // new cow event
-        let new_cow_event = CowEventDetails {
-            id: String::from_slice(&env, "qKRoefgNAp321"),
-            name: symbol_short!("mainland"),
-            owner: user,
-            last_fed_ledger: env.ledger().sequence(),
-        };
-        // publish cow event
-        env.events()
-            .publish((symbol_short!("auction"),), new_cow_event);
-        // give success result
-        env.ledger().sequence()
     }
 
     fn register_auction(

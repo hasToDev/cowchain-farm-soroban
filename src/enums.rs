@@ -44,3 +44,10 @@ pub enum CowBreed {
     Holstein = 5,
     Simmental = 6,
 }
+
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
+pub enum CowGender {
+    Male,
+    Female,
+}
