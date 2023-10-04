@@ -169,7 +169,7 @@ impl CowContractTrait for CowContract {
             born_ledger: env.ledger().sequence(),
             last_fed_ledger: env.ledger().sequence(),
             feeding_stats: CowFeedingStats::new(),
-            auction_id: String::from_slice(&env, "-"),
+            auction_id: String::from_slice(&env, ""),
         };
         let mut cow_ownership_list: Vec<String> = Vec::new(&env);
 
@@ -216,8 +216,6 @@ impl CowContractTrait for CowContract {
     }
 
     fn sell_cow(env: Env, user: Address, cow_id: String) -> SellCowResult {
-        // todo: check for auction ID, if empty continue selling, if exist then reject selling
-
         // ensures that user has authorized invocation of this contract.
         user.require_auth();
 
@@ -241,6 +239,11 @@ impl CowContractTrait for CowContract {
 
         // get cow data.
         let cow_data: CowData = env.storage().temporary().get(&cow_id).unwrap();
+
+        // check for auction ID, cancel sell if exist.
+        if cow_data.auction_id.ne(&String::from_slice(&env, "")) {
+            return SellCowResult::new(env, Status::OnAuction);
+        }
 
         // here we check the age of the cow.
         // a cow can only be sold after it has been alive for 3 days.

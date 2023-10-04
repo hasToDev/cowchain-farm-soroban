@@ -1,5 +1,5 @@
 use crate::enums::{CowBreed, Status};
-use soroban_sdk::{contracttype, symbol_short, Address, Env, String, Symbol, Vec};
+use soroban_sdk::{contracttype, Address, Env, String, Symbol, Vec};
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
