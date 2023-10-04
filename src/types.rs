@@ -21,15 +21,15 @@ impl CowStatus {
 #[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
 pub struct BuyCowResult {
     pub status: Status,
-    pub cow_data: CowData,
+    pub cow_data: Vec<CowData>,
     pub ownership: Vec<String>,
 }
 
 impl BuyCowResult {
-    pub fn default(env: Env, return_status: Status) -> Self {
+    pub fn new(env: Env, return_status: Status) -> Self {
         Self {
             status: return_status,
-            cow_data: CowData::default(env.clone()),
+            cow_data: Vec::new(&env),
             ownership: Vec::new(&env),
         }
     }

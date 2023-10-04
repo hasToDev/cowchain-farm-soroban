@@ -132,7 +132,7 @@ impl CowContractTrait for CowContract {
         // if Native Token key not exist, contract has not been initialized.
         let is_native_token_exist = env.storage().instance().has(&DataKey::NativeToken);
         if !is_native_token_exist {
-            return BuyCowResult::default(env, Status::NotInitialized);
+            return BuyCowResult::new(env, Status::NotInitialized);
         }
 
         // initiate native token client.
@@ -151,7 +151,7 @@ impl CowContractTrait for CowContract {
 
         // cancel the transaction if user balance after transaction equal or less than zero.
         if user_balance_after_tx <= 0 {
-            return BuyCowResult::default(env, Status::InsufficientFund);
+            return BuyCowResult::new(env, Status::InsufficientFund);
         }
 
         // transfer native token to supplier to complete the buying process.
@@ -205,9 +205,12 @@ impl CowContractTrait for CowContract {
         };
         env.events().publish((symbol_short!("buy"),), new_cow_event);
 
+        // Result
+        let mut cow_data_list: Vec<CowData> = Vec::new(&env);
+        cow_data_list.push_back(new_cow_data);
         BuyCowResult {
             status: Status::Ok,
-            cow_data: new_cow_data,
+            cow_data: cow_data_list,
             ownership: cow_ownership_list,
         }
     }
