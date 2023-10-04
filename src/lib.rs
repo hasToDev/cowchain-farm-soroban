@@ -135,6 +135,12 @@ impl CowContractTrait for CowContract {
             return BuyCowResult::new(env, Status::NotInitialized);
         }
 
+        // check for cow UNIQUE name, cancel buy if name already exists.
+        let is_name_exist = env.storage().temporary().has(&cow_name);
+        if is_name_exist {
+            return BuyCowResult::new(env, Status::NameAlreadyExist);
+        }
+
         // initiate native token client.
         let native_token: Address = env.storage().instance().get(&DataKey::NativeToken).unwrap();
         let native_token_client = token::Client::new(&env, &native_token);
@@ -192,6 +198,14 @@ impl CowContractTrait for CowContract {
         env.storage().temporary().set(&cow_id, &new_cow_data);
         env.storage().temporary().bump(
             &cow_id,
+            LEDGER_AMOUNT_IN_24_HOURS,
+            LEDGER_AMOUNT_IN_24_HOURS,
+        );
+
+        // save cow unique name & bump lifetime to 24 hours.
+        env.storage().temporary().set(&cow_name, &cow_id);
+        env.storage().temporary().bump(
+            &cow_name,
             LEDGER_AMOUNT_IN_24_HOURS,
             LEDGER_AMOUNT_IN_24_HOURS,
         );
@@ -286,8 +300,9 @@ impl CowContractTrait for CowContract {
             .persistent()
             .bump(&user, LEDGER_AMOUNT_IN_1_WEEK, LEDGER_AMOUNT_IN_1_WEEK);
 
-        // remove cow data from storage.
+        // remove cow data & cow UNIQUE name from storage.
         env.storage().temporary().remove(&cow_id);
+        env.storage().temporary().remove(&cow_data.name);
 
         // publish Cowchain Farm SELL event
         let new_cow_event = CowEventDetails {
@@ -391,6 +406,13 @@ impl CowContractTrait for CowContract {
         env.storage().temporary().set(&cow_id, &cow_data);
         env.storage().temporary().bump(
             &cow_id,
+            LEDGER_AMOUNT_IN_24_HOURS,
+            LEDGER_AMOUNT_IN_24_HOURS,
+        );
+
+        // bump cow unique name lifetime to 24 hours.
+        env.storage().temporary().bump(
+            &cow_data.name,
             LEDGER_AMOUNT_IN_24_HOURS,
             LEDGER_AMOUNT_IN_24_HOURS,
         );
