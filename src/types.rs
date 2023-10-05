@@ -121,6 +121,7 @@ pub struct AuctionData {
     pub cow_id: String,
     pub cow_name: Symbol,
     pub cow_breed: CowBreed,
+    pub cow_gender: CowGender,
     pub cow_born_ledger: u32,
     pub owner: Address,
     pub start_price: i128,

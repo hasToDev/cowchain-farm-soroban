@@ -512,6 +512,7 @@ impl CowContractTrait for CowContract {
             cow_id: cow_id.clone(),
             cow_name: cow_data.name.clone(),
             cow_breed: cow_data.breed.clone(),
+            cow_gender: cow_data.gender.clone(),
             cow_born_ledger: cow_data.born_ledger.clone(),
             owner: user.clone(),
             start_price: price.clone() as i128,
