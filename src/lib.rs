@@ -520,7 +520,7 @@ impl CowContractTrait for CowContract {
                 price: price as i128,
             },
             bid_history: Vec::new(&env),
-            auction_limit_ledger: LEDGER_AMOUNT_IN_12_HOURS,
+            auction_limit_ledger: env.ledger().sequence() + LEDGER_AMOUNT_IN_12_HOURS,
         };
 
         // Create and/or append auction list
