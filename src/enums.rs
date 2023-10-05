@@ -48,6 +48,6 @@ pub enum CowBreed {
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
 pub enum CowGender {
-    Male,
-    Female,
+    Male = 1,
+    Female = 2,
 }
