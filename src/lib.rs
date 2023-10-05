@@ -520,7 +520,7 @@ impl CowContractTrait for CowContract {
                 price: price as i128,
             },
             bid_history: Vec::new(&env),
-            auction_limit_ledger: LEDGER_AMOUNT_IN_24_HOURS,
+            auction_limit_ledger: LEDGER_AMOUNT_IN_12_HOURS,
         };
 
         // Create and/or append auction list
@@ -548,14 +548,14 @@ impl CowContractTrait for CowContract {
             LEDGER_AMOUNT_IN_1_MONTH,
         );
 
-        // save auction data & bump lifetime to 48 hours.
+        // save auction data & bump lifetime to 24 hours.
         env.storage()
             .temporary()
             .set(&auction_id, &new_auction_data);
         env.storage().temporary().bump(
             &auction_id,
-            LEDGER_AMOUNT_IN_48_HOURS,
-            LEDGER_AMOUNT_IN_48_HOURS,
+            LEDGER_AMOUNT_IN_24_HOURS,
+            LEDGER_AMOUNT_IN_24_HOURS,
         );
 
         // save updated cow data.
