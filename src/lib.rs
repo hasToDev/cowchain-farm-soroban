@@ -340,6 +340,13 @@ impl CowContractTrait for CowContract {
         let cow_data: CowData = env.storage().temporary().get(&cow_id).unwrap();
         let cow_base_price: i128 = get_cow_base_price_in_stroops(&cow_data.breed);
 
+        // check if cow is underage.
+        let current_ledger: u32 = env.ledger().sequence();
+        let cow_age: u32 = current_ledger - cow_data.born_ledger;
+        if cow_age < LEDGER_AMOUNT_IN_3_DAYS {
+            return CowAppraisalResult::new(Status::Underage);
+        }
+
         // get cow appraisal price.
         let cow_price_appraisal = get_cow_appraisal_price(&cow_data, cow_base_price);
 
