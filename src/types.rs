@@ -142,6 +142,7 @@ pub struct Bidder {
 pub struct AuctionEventDetails {
     pub auction_id: String,
     pub cow_id: String,
+    pub name: Symbol,
     pub owner: Address,
     pub bidder: Address,
     pub price: i128,

@@ -584,6 +584,7 @@ impl CowContractTrait for CowContract {
         let new_auction_event = AuctionEventDetails {
             auction_id: new_auction_data.auction_id.clone(),
             cow_id: new_auction_data.cow_id.clone(),
+            name: new_auction_data.cow_name.clone(),
             owner: new_auction_data.owner.clone(),
             bidder: new_auction_data.highest_bidder.user.clone(),
             price: new_auction_data.highest_bidder.price.clone(),
@@ -656,6 +657,7 @@ impl CowContractTrait for CowContract {
             let new_auction_event = AuctionEventDetails {
                 auction_id: auction_data.auction_id.clone(),
                 cow_id: auction_data.cow_id.clone(),
+                name: auction_data.cow_name.clone(),
                 owner: auction_data.owner.clone(),
                 bidder: auction_data.highest_bidder.user.clone(),
                 price: auction_data.highest_bidder.price.clone(),
@@ -750,6 +752,7 @@ impl CowContractTrait for CowContract {
             let new_auction_event = AuctionEventDetails {
                 auction_id: auction_data.auction_id.clone(),
                 cow_id: auction_data.cow_id.clone(),
+                name: auction_data.cow_name.clone(),
                 owner: auction_data.owner.clone(),
                 bidder: auction_data.highest_bidder.user.clone(),
                 price: auction_data.highest_bidder.price.clone(),
@@ -847,6 +850,7 @@ impl CowContractTrait for CowContract {
         let new_auction_event = AuctionEventDetails {
             auction_id: auction_data.auction_id.clone(),
             cow_id: auction_data.cow_id.clone(),
+            name: auction_data.cow_name.clone(),
             owner: auction_data.owner.clone(),
             bidder: auction_data.highest_bidder.user.clone(),
             price: auction_data.highest_bidder.price.clone(),
