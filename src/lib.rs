@@ -510,8 +510,14 @@ impl CowContractTrait for CowContract {
             return AuctionResult::new(env, Status::NotFound);
         }
 
-        // Set CowData's auction ID to indicate that this cow is being auctioned.
         let mut cow_data: CowData = env.storage().temporary().get(&cow_id).unwrap();
+
+        // check for auction ID, cancel register if it is already being auctioned.
+        if cow_data.auction_id.ne(&String::from_slice(&env, "")) {
+            return AuctionResult::new(env, Status::OnAuction);
+        }
+
+        // Set CowData's auction ID to indicate that this cow is being auctioned.
         cow_data.auction_id = auction_id.clone();
 
         let new_auction_data = AuctionData {
