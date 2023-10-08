@@ -141,8 +141,11 @@ pub struct Bidder {
 #[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
 pub struct AuctionEventDetails {
     pub auction_id: String,
+    pub cow_id: String,
+    pub owner: Address,
     pub bidder: Address,
     pub price: i128,
+    pub auction_limit_ledger: u32,
 }
 
 #[contracttype]

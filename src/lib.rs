@@ -574,6 +574,18 @@ impl CowContractTrait for CowContract {
             .persistent()
             .bump(&user, LEDGER_AMOUNT_IN_1_WEEK, LEDGER_AMOUNT_IN_1_WEEK);
 
+        // publish Cowchain Farm AUCTION event
+        let new_auction_event = AuctionEventDetails {
+            auction_id: new_auction_data.auction_id.clone(),
+            cow_id: new_auction_data.cow_id.clone(),
+            owner: new_auction_data.owner.clone(),
+            bidder: new_auction_data.highest_bidder.user.clone(),
+            price: new_auction_data.highest_bidder.price.clone(),
+            auction_limit_ledger: new_auction_data.auction_limit_ledger.clone(),
+        };
+        env.events()
+            .publish((symbol_short!("register"),), new_auction_event);
+
         // return result
         let mut result: Vec<AuctionData> = Vec::new(&env);
         result.push_back(new_auction_data);
@@ -637,8 +649,11 @@ impl CowContractTrait for CowContract {
             // publish Cowchain Farm REFUND event
             let new_auction_event = AuctionEventDetails {
                 auction_id: auction_data.auction_id.clone(),
+                cow_id: auction_data.cow_id.clone(),
+                owner: auction_data.owner.clone(),
                 bidder: auction_data.highest_bidder.user.clone(),
                 price: auction_data.highest_bidder.price.clone(),
+                auction_limit_ledger: auction_data.auction_limit_ledger.clone(),
             };
             env.events()
                 .publish((symbol_short!("refund"),), new_auction_event);
@@ -728,8 +743,11 @@ impl CowContractTrait for CowContract {
             // publish Cowchain Farm REFUND event
             let new_auction_event = AuctionEventDetails {
                 auction_id: auction_data.auction_id.clone(),
+                cow_id: auction_data.cow_id.clone(),
+                owner: auction_data.owner.clone(),
                 bidder: auction_data.highest_bidder.user.clone(),
                 price: auction_data.highest_bidder.price.clone(),
+                auction_limit_ledger: auction_data.auction_limit_ledger.clone(),
             };
             env.events()
                 .publish((symbol_short!("refund"),), new_auction_event);
@@ -822,8 +840,11 @@ impl CowContractTrait for CowContract {
         // publish Cowchain Farm AUCTION event
         let new_auction_event = AuctionEventDetails {
             auction_id: auction_data.auction_id.clone(),
+            cow_id: auction_data.cow_id.clone(),
+            owner: auction_data.owner.clone(),
             bidder: auction_data.highest_bidder.user.clone(),
             price: auction_data.highest_bidder.price.clone(),
+            auction_limit_ledger: auction_data.auction_limit_ledger.clone(),
         };
         env.events()
             .publish((symbol_short!("auction"),), new_auction_event);
