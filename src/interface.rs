@@ -49,4 +49,26 @@ pub trait CowContractTrait {
     /// [CowContract::get_all_cow]
     /// Retrieve all cow data listed in ownership
     fn get_all_cow(env: Env, user: Address) -> GetAllCowResult;
+
+    /// [CowContract::register_auction]
+    /// Registering cow for auction
+    fn register_auction(
+        env: Env,
+        user: Address,
+        cow_id: String,
+        auction_id: String,
+        price: u32,
+    ) -> AuctionResult;
+
+    /// [CowContract::bidding]
+    /// Bidding the auction
+    fn bidding(env: Env, user: Address, auction_id: String, bid_price: u32) -> AuctionResult;
+
+    /// [CowContract::finalize_auction]
+    /// Finalize the auction
+    fn finalize_auction(env: Env, auction_id: String) -> AuctionResult;
+
+    /// [CowContract::get_all_auction]
+    /// Retrieve all auction data
+    fn get_all_auction(env: Env) -> AuctionResult;
 }

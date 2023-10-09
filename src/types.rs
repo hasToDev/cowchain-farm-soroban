@@ -1,5 +1,5 @@
-use crate::enums::{CowBreed, Status};
-use soroban_sdk::{contracttype, symbol_short, Env, String, Symbol, Vec};
+use crate::enums::{CowBreed, CowGender, Status};
+use soroban_sdk::{contracttype, Address, Env, String, Symbol, Vec};
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
@@ -21,15 +21,15 @@ impl CowStatus {
 #[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
 pub struct BuyCowResult {
     pub status: Status,
-    pub cow_data: CowData,
+    pub cow_data: Vec<CowData>,
     pub ownership: Vec<String>,
 }
 
 impl BuyCowResult {
-    pub fn default(env: Env, return_status: Status) -> Self {
+    pub fn new(env: Env, return_status: Status) -> Self {
         Self {
             status: return_status,
-            cow_data: CowData::default(env.clone()),
+            cow_data: Vec::new(&env),
             ownership: Vec::new(&env),
         }
     }
@@ -43,7 +43,7 @@ pub struct SellCowResult {
 }
 
 impl SellCowResult {
-    pub fn default(env: Env, return_status: Status) -> Self {
+    pub fn new(env: Env, return_status: Status) -> Self {
         Self {
             status: return_status,
             ownership: Vec::new(&env),
@@ -59,7 +59,7 @@ pub struct CowAppraisalResult {
 }
 
 impl CowAppraisalResult {
-    pub fn default(return_status: Status) -> Self {
+    pub fn new(return_status: Status) -> Self {
         Self {
             status: return_status,
             price: 0,
@@ -80,22 +80,11 @@ pub struct CowData {
     pub id: String,
     pub name: Symbol,
     pub breed: CowBreed,
+    pub gender: CowGender,
     pub born_ledger: u32,
     pub last_fed_ledger: u32,
     pub feeding_stats: CowFeedingStats,
-}
-
-impl CowData {
-    pub fn default(env: Env) -> Self {
-        Self {
-            id: String::from_slice(&env, ""),
-            name: symbol_short!(""),
-            breed: CowBreed::Jersey,
-            born_ledger: 0,
-            last_fed_ledger: 0,
-            feeding_stats: CowFeedingStats::default(),
-        }
-    }
+    pub auction_id: String,
 }
 
 #[contracttype]
@@ -107,11 +96,71 @@ pub struct CowFeedingStats {
 }
 
 impl CowFeedingStats {
-    pub fn default() -> Self {
+    pub fn new() -> Self {
         Self {
             on_time: 0,
             late: 0,
             forget: 0,
+        }
+    }
+}
+
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
+pub struct CowEventDetails {
+    pub id: String,
+    pub name: Symbol,
+    pub owner: Address,
+    pub last_fed_ledger: u32,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
+pub struct AuctionData {
+    pub auction_id: String,
+    pub cow_id: String,
+    pub cow_name: Symbol,
+    pub cow_breed: CowBreed,
+    pub cow_gender: CowGender,
+    pub cow_born_ledger: u32,
+    pub owner: Address,
+    pub start_price: i128,
+    pub highest_bidder: Bidder,
+    pub bid_history: Vec<Bidder>,
+    pub auction_limit_ledger: u32,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
+pub struct Bidder {
+    pub user: Address,
+    pub price: i128,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
+pub struct AuctionEventDetails {
+    pub auction_id: String,
+    pub cow_id: String,
+    pub name: Symbol,
+    pub owner: Address,
+    pub bidder: Address,
+    pub price: i128,
+    pub auction_limit_ledger: u32,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
+pub struct AuctionResult {
+    pub status: Status,
+    pub auction_data: Vec<AuctionData>,
+}
+
+impl AuctionResult {
+    pub fn new(env: Env, return_status: Status) -> Self {
+        Self {
+            status: return_status,
+            auction_data: Vec::new(&env),
         }
     }
 }

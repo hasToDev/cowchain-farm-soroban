@@ -6,6 +6,7 @@ pub enum DataKey {
     Admin,
     InitializedLedger,
     NativeToken,
+    AuctionList,
 }
 
 #[contracttype]
@@ -26,6 +27,11 @@ pub enum Status {
     Underage,
     MissingOwnership,
     FullStomach,
+    OnAuction,
+    BidIsClosed,
+    BidIsOpen,
+    CannotBidLower,
+    NameAlreadyExist,
 }
 
 #[contracttype]
@@ -37,4 +43,11 @@ pub enum CowBreed {
     Hereford = 4,
     Holstein = 5,
     Simmental = 6,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
+pub enum CowGender {
+    Male = 1,
+    Female = 2,
 }

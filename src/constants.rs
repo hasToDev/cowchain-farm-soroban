@@ -1,6 +1,13 @@
+// User minimum balance
+// here we set a rule that the user must have a minimum balance of 1.5 XLM.
+// 1 XLM for Stellar network minimum requirement + 0.5 XLM (or more) for operation expenses.
+// 1.5 XLM is equal to 15_000_000 stroops
+pub const MINIMUM_USER_BALANCE: i128 = 15_000_000;
+
 // Ledger approximate number for certain period.
 // Assuming ledger closed time is 5 seconds/ledger.
 //
+pub const LEDGER_AMOUNT_IN_12_HOURS: u32 = 8640;
 pub const LEDGER_AMOUNT_IN_24_HOURS: u32 = 17280;
 pub const LEDGER_AMOUNT_IN_3_DAYS: u32 = 51840;
 pub const LEDGER_AMOUNT_IN_1_WEEK: u32 = 120960;
