@@ -89,7 +89,7 @@ xdr curr (9ac02641139e6717924fdad716f6e958d0168491)
    cargo build --target wasm32-unknown-unknown --release
    ```
 
-3. Deploy the contract to Futurenet:
+3. Deploy the contract to Testnet:
    ```shell
    soroban contract deploy \
    --wasm target/wasm32-unknown-unknown/release/cowchain-farm-soroban.wasm \
@@ -102,7 +102,7 @@ xdr curr (9ac02641139e6717924fdad716f6e958d0168491)
    The form of **Contract Address** will be similar
    to `CB7UCV29SYKUFRZNEIMKVW5XKSJCGTMBCSJFN5OJ2SSXBTPRXO42XGT8`.<br><br>
 
-4. (optional) Install the contract to Futurenet:
+4. (optional) Install the contract to Testnet:
    ```shell
    soroban contract install \
    --wasm target/wasm32-unknown-unknown/release/cowchain-farm-soroban.wasm \
@@ -121,9 +121,9 @@ xdr curr (9ac02641139e6717924fdad716f6e958d0168491)
 
 ### Accounts
 
-Before calling Cowchain Farm smart contract function, make sure you have at least 2 **Stellar FUTURENET account**. You
+Before calling Cowchain Farm smart contract function, make sure you have at least 2 **Stellar TESTNET account**. You
 can create the account using Stellar
-Laboratory [here](https://laboratory.stellar.org/#account-creator?network=futurenet).
+Laboratory [here](https://laboratory.stellar.org/#account-creator?network=test).
 
 The first account will be used as an administrator account, while the second account will be used as a user account.
 
