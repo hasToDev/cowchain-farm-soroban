@@ -15,7 +15,7 @@ access the smart contracts functionality built with one of the most popular cros
 frameworks, [Flutter](https://flutter.dev).
 
 Cowchain Farm smart contract will cover several capabilities of Soroban that exist in
-the [Preview 10 release](https://soroban.stellar.org/docs/reference/releases), which include:
+the [Preview 11 release](https://soroban.stellar.org/docs/reference/releases), which include:
 
 1. Authentication and authorization
 2. Error handling
@@ -24,19 +24,30 @@ the [Preview 10 release](https://soroban.stellar.org/docs/reference/releases), w
 5. Contract upgrading
 6. Payment transfer
 7. Data storage expiration
+8. Events
 
 While the Cowchain Farm web app will cover the following:
 
 1. Calling Soroban smart contract function using [Flutter Stellar SDK](https://pub.dev/packages/stellar_flutter_sdk)
 2. Communication with the [Freighter](https://www.freighter.app) browser extension
 
+And the latest addition is the Cowchain Farm notification service, which includes:
+
+1. Ingesting events from Soroban smart contracts using [Dart CLI](https://dart.dev/tutorials/server/get-started)
+   with [Flutter Stellar SDK](https://pub.dev/packages/stellar_flutter_sdk)
+2. Sending notifications to Cowchain Farm users using [OneSignal](https://onesignal.com)
+
 ## Get Started
 
-This article is specifically about the Soroban smart contract for Cowchain Farm. Discussion of the Cowchain Farm web app
-is in the [Cowchain Farm App repository](https://github.com/hasToDev/cowchain-farm-app).
+This article is specifically about the Soroban smart contract for Cowchain Farm.
+
+Discussion of the Cowchain Farm web app is in
+the [Cowchain Farm App repository](https://github.com/hasToDev/cowchain-farm-app),
+and the discussion for Cowchain Farm Dart CLI notification service is in
+the [Cowchain Farm Alert repository](https://github.com/hasToDev/cowchain-farm-alert).
 
 The Cowchain Farm smart contract in this repository was developed using `Rust version 1.73.0-nightly`
-and `Soroban CLI 20.0.0-rc1`
+and `Soroban CLI 20.0.0-rc4`
 
 ## Install Rust and Soroban CLI
 
@@ -49,7 +60,7 @@ The first step you have to do is install Rust. You can follow the steps to insta
 Next we install Soroban CLI:
 
 ```shell
-cargo install --locked --version 20.0.0-rc1 soroban-cli
+cargo install --locked --version 20.0.0-rc4 soroban-cli
 ```
 
 Confirm that both Rust and Soroban CLI are installed by running `rustc --version` and `soroban --version`.
@@ -59,9 +70,9 @@ You should receive a result that is more or less similar to:
 ```text
 rustc 1.73.0-nightly (32303b219 2023-07-29)
 
-soroban 20.0.0-rc1 (7d3b4175b1970f76455b4789797c2edc5f79e432)    
-soroban-env 20.0.0-rc1 (f19ef13363a1e0cbff7b100c0599a1d63dea88a6)
-soroban-env interface version 85899345977                        
+soroban 20.0.0-rc4 (bce5e56ba16ba977200b022c91f3eaf6282f47eb)
+soroban-env 20.0.0-rc2 (8c63bff68a15d79aca3a705ee6916a68db57b7e6)
+soroban-env interface version 85899345977
 stellar-xdr 20.0.0-rc1 (d5ce0c9e7aa83461773a6e81662067f35d39e4c1)
 xdr curr (9ac02641139e6717924fdad716f6e958d0168491)
 ```
@@ -82,8 +93,8 @@ xdr curr (9ac02641139e6717924fdad716f6e958d0168491)
    ```shell
    soroban contract deploy \
    --wasm target/wasm32-unknown-unknown/release/cowchain-farm-soroban.wasm \
-   --rpc-url https://rpc-futurenet.stellar.org:443 \
-   --network-passphrase 'Test SDF Future Network ; October 2022'
+   --rpc-url https://soroban-testnet.stellar.org:443 \
+   --network-passphrase 'Test SDF Network ; September 2015'
    ```
    After the deployment is complete, you will receive a **Contract Address**. Save that address to be used in calling
    the contract functions.
@@ -95,8 +106,8 @@ xdr curr (9ac02641139e6717924fdad716f6e958d0168491)
    ```shell
    soroban contract install \
    --wasm target/wasm32-unknown-unknown/release/cowchain-farm-soroban.wasm \
-   --rpc-url https://rpc-futurenet.stellar.org:443 \
-   --network-passphrase 'Test SDF Future Network ; October 2022'
+   --rpc-url https://soroban-testnet.stellar.org:443 \
+   --network-passphrase 'Test SDF Network ; September 2015'
    ```
    After the installation process is complete, you will receive a **Contract ID**.
 
@@ -146,11 +157,11 @@ Soroban CLI:
 ```shell
 soroban lab token id \
 --asset native \
---rpc-url https://rpc-futurenet.stellar.org:443 \
---network-passphrase 'Test SDF Future Network ; October 2022'
+--rpc-url https://soroban-testnet.stellar.org:443 \
+--network-passphrase 'Test SDF Network ; September 2015'
 ```
 
-The Stellar native asset token contract address is `CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OHT`.
+The Stellar native asset token contract address is `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC`.
 
 ## Calling Smart Contract Function
 
@@ -163,13 +174,13 @@ The Stellar native asset token contract address is `CB64D3G7SM2RTH6JSGG34DDTFTQ5
    soroban contract invoke \
    --id CB7UCV29SYKUFRZNEIMKVW5XKSJCGTMBCSJFN5OJ2SSXBTPRXO42XGT8 \
    --source SBNESSDQWIDIO7NYDAHM2STHSVZPIIPM3OGT6PB56DL2EE4XXIHECYYP \
-   --rpc-url https://rpc-futurenet.stellar.org:443 \
-   --network-passphrase 'Test SDF Future Network ; October 2022' \
+   --rpc-url https://soroban-testnet.stellar.org:443 \
+   --network-passphrase 'Test SDF Network ; September 2015' \
    --fee 12345678 \
    -- \
    init \
    --admin GCMEOWWTRG6QD2S5F2V66CJTT7EG4MDPL7U523SGTLOHZPPUAJFGNIS6 \
-   --native_token CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OHT \
+   --native_token CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC \
    --message "kBfn7v17QdX4kD856bX2mBj1Y"
    ```
 2. Contract Upgrade
@@ -179,8 +190,8 @@ The Stellar native asset token contract address is `CB64D3G7SM2RTH6JSGG34DDTFTQ5
    soroban contract invoke \
    --id CB7UCV29SYKUFRZNEIMKVW5XKSJCGTMBCSJFN5OJ2SSXBTPRXO42XGT8 \
    --source SBNESSDQWIDIO7NYDAHM2STHSVZPIIPM3OGT6PB56DL2EE4XXIHECYYP \
-   --rpc-url https://rpc-futurenet.stellar.org:443 \
-   --network-passphrase 'Test SDF Future Network ; October 2022' \
+   --rpc-url https://soroban-testnet.stellar.org:443 \
+   --network-passphrase 'Test SDF Network ; September 2015' \
    --fee 12345678 \
    -- \
    upgrade \
@@ -193,8 +204,8 @@ The Stellar native asset token contract address is `CB64D3G7SM2RTH6JSGG34DDTFTQ5
    ```shell
    soroban contract invoke \
    --id CB7UCV29SYKUFRZNEIMKVW5XKSJCGTMBCSJFN5OJ2SSXBTPRXO42XGT8 \
-   --rpc-url https://rpc-futurenet.stellar.org:443 \
-   --network-passphrase 'Test SDF Future Network ; October 2022' \
+   --rpc-url https://soroban-testnet.stellar.org:443 \
+   --network-passphrase 'Test SDF Network ; September 2015' \
    --fee 12345678 \
    -- \
    bump_instance \
@@ -205,8 +216,8 @@ The Stellar native asset token contract address is `CB64D3G7SM2RTH6JSGG34DDTFTQ5
    ```shell
    soroban contract invoke \
    --id CB7UCV29SYKUFRZNEIMKVW5XKSJCGTMBCSJFN5OJ2SSXBTPRXO42XGT8 \
-   --rpc-url https://rpc-futurenet.stellar.org:443 \
-   --network-passphrase 'Test SDF Future Network ; October 2022' \
+   --rpc-url https://soroban-testnet.stellar.org:443 \
+   --network-passphrase 'Test SDF Network ; September 2015' \
    --fee 12345678 \
    -- \
    health_check
@@ -220,8 +231,8 @@ The Stellar native asset token contract address is `CB64D3G7SM2RTH6JSGG34DDTFTQ5
    soroban contract invoke \
    --id CB7UCV29SYKUFRZNEIMKVW5XKSJCGTMBCSJFN5OJ2SSXBTPRXO42XGT8 \
    --source SDM6DSM6Y3KZ3AN5FW632FYRW3RND6K42LSMEKUGCIP6FPSBHL5RJFDE \
-   --rpc-url https://rpc-futurenet.stellar.org:443 \
-   --network-passphrase 'Test SDF Future Network ; October 2022' \
+   --rpc-url https://soroban-testnet.stellar.org:443 \
+   --network-passphrase 'Test SDF Network ; September 2015' \
    --fee 12345678 \
    -- \
    buy_cow \
@@ -238,8 +249,8 @@ The Stellar native asset token contract address is `CB64D3G7SM2RTH6JSGG34DDTFTQ5
    soroban contract invoke \
    --id CB7UCV29SYKUFRZNEIMKVW5XKSJCGTMBCSJFN5OJ2SSXBTPRXO42XGT8 \
    --source SDM6DSM6Y3KZ3AN5FW632FYRW3RND6K42LSMEKUGCIP6FPSBHL5RJFDE \
-   --rpc-url https://rpc-futurenet.stellar.org:443 \
-   --network-passphrase 'Test SDF Future Network ; October 2022' \
+   --rpc-url https://soroban-testnet.stellar.org:443 \
+   --network-passphrase 'Test SDF Network ; September 2015' \
    --fee 12345678 \
    -- \
    sell_cow \
@@ -252,8 +263,8 @@ The Stellar native asset token contract address is `CB64D3G7SM2RTH6JSGG34DDTFTQ5
    ```shell
    soroban contract invoke \
    --id CB7UCV29SYKUFRZNEIMKVW5XKSJCGTMBCSJFN5OJ2SSXBTPRXO42XGT8 \
-   --rpc-url https://rpc-futurenet.stellar.org:443 \
-   --network-passphrase 'Test SDF Future Network ; October 2022' \
+   --rpc-url https://soroban-testnet.stellar.org:443 \
+   --network-passphrase 'Test SDF Network ; September 2015' \
    --fee 12345678 \
    -- \
    cow_appraisal \
@@ -265,8 +276,8 @@ The Stellar native asset token contract address is `CB64D3G7SM2RTH6JSGG34DDTFTQ5
    ```shell
    soroban contract invoke \
    --id CB7UCV29SYKUFRZNEIMKVW5XKSJCGTMBCSJFN5OJ2SSXBTPRXO42XGT8 \
-   --rpc-url https://rpc-futurenet.stellar.org:443 \
-   --network-passphrase 'Test SDF Future Network ; October 2022' \
+   --rpc-url https://soroban-testnet.stellar.org:443 \
+   --network-passphrase 'Test SDF Network ; September 2015' \
    --fee 12345678 \
    -- \
    feed_the_cow \
@@ -281,23 +292,133 @@ The Stellar native asset token contract address is `CB64D3G7SM2RTH6JSGG34DDTFTQ5
    soroban contract invoke \
    --id CB7UCV29SYKUFRZNEIMKVW5XKSJCGTMBCSJFN5OJ2SSXBTPRXO42XGT8 \
    --source SDM6DSM6Y3KZ3AN5FW632FYRW3RND6K42LSMEKUGCIP6FPSBHL5RJFDE \
-   --rpc-url https://rpc-futurenet.stellar.org:443 \
-   --network-passphrase 'Test SDF Future Network ; October 2022' \
+   --rpc-url https://soroban-testnet.stellar.org:443 \
+   --network-passphrase 'Test SDF Network ; September 2015' \
    --fee 12345678 \
    -- \
    get_all_cow \
    --user GCK2IJZ3XTVRZWX27YITE2DBIDSHDIVNIICLJ63P6XXFAFHVFFWS52UY
    ```
 
+10. Register Cow Auction
+    <br> Required auth: <u>USER account authorization</u>.
+    <br> Required arguments: <u>USER account address</u>, <u>cow id</u>, <u>auction id</u>, and <u>start price</u>.
+    ```shell
+    soroban contract invoke \
+    --id CB7UCV29SYKUFRZNEIMKVW5XKSJCGTMBCSJFN5OJ2SSXBTPRXO42XGT8 \
+    --source SDM6DSM6Y3KZ3AN5FW632FYRW3RND6K42LSMEKUGCIP6FPSBHL5RJFDE \
+    --rpc-url https://soroban-testnet.stellar.org:443 \
+    --network-passphrase 'Test SDF Network ; September 2015' \
+    --fee 12345678 \
+    -- \
+    register_auction \
+    --user GCK2IJZ3XTVRZWX27YITE2DBIDSHDIVNIICLJ63P6XXFAFHVFFWS52UY \
+    --cow_id 8e6bbeyd144a4fjY753r80c286d781c7074fb371 \
+    --auction_id UP30JKm637DgL7xnjrywp3hDpdBxAfeLPjbJ27ss \
+    --price 1245
+    ```
+
+11. Bidding Cow Auction
+    <br> Required auth: <u>USER account authorization</u>.
+    <br> Required arguments: <u>USER account address</u>, <u>auction id</u>, and <u>bid price</u>.
+    ```shell
+    soroban contract invoke \
+    --id CB7UCV29SYKUFRZNEIMKVW5XKSJCGTMBCSJFN5OJ2SSXBTPRXO42XGT8 \
+    --source SDM6DSM6Y3KZ3AN5FW632FYRW3RND6K42LSMEKUGCIP6FPSBHL5RJFDE \
+    --rpc-url https://soroban-testnet.stellar.org:443 \
+    --network-passphrase 'Test SDF Network ; September 2015' \
+    --fee 12345678 \
+    -- \
+    bidding \
+    --user GCK2IJZ3XTVRZWX27YITE2DBIDSHDIVNIICLJ63P6XXFAFHVFFWS52UY \
+    --auction_id UP30JKm637DgL7xnjrywp3hDpdBxAfeLPjbJ27ss \
+    --bid_price 3467
+    ```
+
+12. Finalize or Close Cow Auction
+    <br> Required arguments: <u>auction id</u>.
+    ```shell
+    soroban contract invoke \
+    --id CB7UCV29SYKUFRZNEIMKVW5XKSJCGTMBCSJFN5OJ2SSXBTPRXO42XGT8 \
+    --source SDM6DSM6Y3KZ3AN5FW632FYRW3RND6K42LSMEKUGCIP6FPSBHL5RJFDE \
+    --rpc-url https://soroban-testnet.stellar.org:443 \
+    --network-passphrase 'Test SDF Network ; September 2015' \
+    --fee 12345678 \
+    -- \
+    finalize_auction \
+    --auction_id UP30JKm637DgL7xnjrywp3hDpdBxAfeLPjbJ27ss
+    ```
+
+13. Retrieve All Auction Data
+    ```shell
+    soroban contract invoke \
+    --id CB7UCV29SYKUFRZNEIMKVW5XKSJCGTMBCSJFN5OJ2SSXBTPRXO42XGT8 \
+    --source SDM6DSM6Y3KZ3AN5FW632FYRW3RND6K42LSMEKUGCIP6FPSBHL5RJFDE \
+    --rpc-url https://soroban-testnet.stellar.org:443 \
+    --network-passphrase 'Test SDF Network ; September 2015' \
+    --fee 12345678 \
+    -- \
+    get_all_auction
+    ```
+
+14. Give XLM Donation to Contract
+    <br> Required auth: <u>USER account authorization</u>.
+    <br> Required arguments: <u>USER account address</u>, and <u>donation amount</u>.
+    ```shell
+    soroban contract invoke \
+    --id CB7UCV29SYKUFRZNEIMKVW5XKSJCGTMBCSJFN5OJ2SSXBTPRXO42XGT8 \
+    --source SDM6DSM6Y3KZ3AN5FW632FYRW3RND6K42LSMEKUGCIP6FPSBHL5RJFDE \
+    --rpc-url https://soroban-testnet.stellar.org:443 \
+    --network-passphrase 'Test SDF Network ; September 2015' \
+    --fee 12345678 \
+    -- \
+    open_donation \
+    --from GCK2IJZ3XTVRZWX27YITE2DBIDSHDIVNIICLJ63P6XXFAFHVFFWS52UY \
+    --amount 25750
+    ```
+
 ## State Expiration
 
-The Cowchain Farm contract, upon initialization, will have its INSTANCE storage lifetime bumped to 50 weeks.
+The Cowchain Farm contract, upon initialization, will have its INSTANCE storage lifetime bumped to 4 weeks.
 
 User registration data has 1 week of lifetime in PERSISTENT storage, and it will be bumped every time
-function **buy_cow**, **sell_cow**, and **feed_the_cow** is called.
+function **buy_cow**, **sell_cow**, **feed_the_cow**, **register_auction**, and **bidding** is called.
 
 While each cow only has 24 hours of lifetime in TEMPORARY storage. It must be bumped by calling the **feed_the_cow**
 function before the time is up. Otherwise, the data will be lost.
+
+Cow unique names have the same lifetime of cow data. Every time a cow's lifetime is bumped by the  **feed_the_cow**
+function, the Cow unique name will get bumped too.
+
+Every time we register for Cow Auction, although the duration for the auction is 12 hours, the auction data will be
+created with 24 hours lifetime.
+
+## Events & Notification Service
+
+There are several events that will be emitted every time a particular function is called.
+
+This event will be ingested by a notification service that will notify each user who installs the [Cowchain Farm
+notification app](https://www.dropbox.com/scl/fi/q6qksqguoi30dgfo3t5c2/cowchain_farm_200.apk?rlkey=7n0xadf3j6r01hp65jxsdo0fo&raw=1).
+And they will have to register the Stellar wallet account ID or Public Key that they use for Cowchain
+Farm in the app.
+
+The event in Cowchain Farm smart contract includes:
+
+1. buy
+2. sell
+3. feed
+4. register
+5. refund
+6. auction
+
+The Cowchain Farm notification service will send notifications when:
+
+1. Your cow starts to feel hungry.
+2. You win an auction.
+3. Your funds are refunded because someone outbid you at an auction.
+
+Apart from sending notifications to users, the notification service will also finalize or close the ongoing auction
+after the auction has reached its ledger limit. That way, the user won't have to worry about completing their auction.
 
 ## License
 
